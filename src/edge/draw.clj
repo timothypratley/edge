@@ -1,6 +1,7 @@
 (ns edge.draw
-  (:require [quil.core :refer :all]
-            [edge.core :refer :all]))
+  (:require [edge.world :refer :all]
+            [quil.core :refer :all]))
+
 
 (defn setup []
   (rect-mode :center)
@@ -36,18 +37,19 @@
       (fill 0)
       (rect 0 0 10 3))))
 
-(defn draw []
+(defn draw [world]
   (background-float 200)
   (doseq [h (@world :hospitals)]
     (draw-hospital h))
   (doseq [r (@world :remotes)]
     (draw-remote r))
   (doseq [d (@world :drones)]
-    (draw-drone d))
-  (step))
+    (draw-drone d)))
 
-(defsketch example
-  :title "Map of the world"
-  :setup setup
-  :draw draw
-  :size [1024 800])
+(defn sketch-world
+  [world]
+  (sketch
+    :title "Map of the world"
+    :setup setup
+    :draw #(draw world)
+    :size [1024 800]))

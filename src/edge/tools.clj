@@ -1,5 +1,7 @@
 (ns edge.tools
+  "Investigating which clojure features are most used in the wild"
   (:require [clojure.java.io :refer :all]))
+
 
 (defn dict-inc [m k]
   (update-in m [k] (fnil inc 0)))
@@ -21,11 +23,14 @@
 ;(word-freq (file "/git/lib-noir/src/noir/util/crypt.clj"))
 
 (defn freq-path
+  "Reports how often each word occurs in all clj files in path"
   [path]
   (sort-by last >
            (word-freq (file path))))
-;(clojure.pprint/pprint (freq-path "/git/lib-noir"))
+; I ran this on a well known library to get some statistics on what Clojure
+; features are used in the wild, to make sure we focus on the important ones
 
+;(clojure.pprint/pprint (freq-path "/git/lib-noir"))
 ;is
 ;defn
 ;if

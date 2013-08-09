@@ -37,7 +37,7 @@
       (update-in [:location] #(interpolate % (drone :goal) (drone :speed)))
       ))
 
-(defn update [drone]
+(defn update-drone [drone]
   (if (drone :goal)
     (fly drone)
     drone))

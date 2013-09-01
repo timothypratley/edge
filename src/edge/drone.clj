@@ -32,10 +32,10 @@
 
 ;(interpolate [3 4] [30 40] 1)
 
+
 (defn fly [drone]
   (-> drone
-      (update-in [:location] #(interpolate % (drone :goal) (drone :speed)))
-      ))
+      (update-in [:location] #(interpolate % (drone :goal) (drone :speed)))))
 
 (defn update-drone [drone]
   (if (drone :goal)

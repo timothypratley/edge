@@ -7,8 +7,11 @@
 
 #_(sketch-world (iterate step (rand-world [1024 800] 4 50 20)))
 (def world (ref (rand-world [1024 800] 4 50 20)))
-(sketch-world world)
 
-(dotimes [i 10000]
-  (Thread/sleep 10)
+(defn next-world []
   (dosync (alter world step)))
+
+(next-world)
+
+(sketch-world next-world)
+

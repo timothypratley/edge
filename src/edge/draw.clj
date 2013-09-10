@@ -1,17 +1,13 @@
 (ns edge.draw
   (:require [edge.world :refer :all]
+            [edge.event-sourcing :refer :all]
             [quil.core :refer :all]))
 
 
-(defn setup []
-  (text-align :center)
-  (rect-mode :center)
-  (smooth)
-  (frame-rate 60))
-
-(defn draw-hospital [{[x y] :location}]
+(defn draw-hospital [{[x y] :location
+                      n :name}]
   (with-translation [x y]
-    (text "hospital" 0 -10)
+    (text n 0 -10)
     (stroke 255)
     (stroke-weight 5)
     (fill 255)
@@ -31,12 +27,12 @@
     (fill 0)
     (ellipse 0 0 10 10)))
 
-; h = (/ Math/PI 4)
 (defn draw-drone [{[x y] :location
                    h :heading
-                   p :payload}]
+                   p :payload
+                   n :name}]
   (with-translation [x y]
-    (text "drone" 0 -10)
+    (text n 0 -10)
     (with-rotation [h]
       (stroke 0 200 0)
       (stroke-weight 1)
@@ -55,7 +51,8 @@
                         :default [255 0 0]))
       (rect 0 0 10 3))))
 
-(defn draw [world]
+;; TODO: make this a multimethod?
+(defn draw-world [world]
   (background-float 200)
   (doseq [h (world :hospitals)]
     (draw-hospital h))
@@ -64,10 +61,23 @@
   (doseq [d (world :drones)]
     (draw-drone d)))
 
+(defn setup []
+  (text-align :center)
+  (rect-mode :center)
+  (smooth)
+  (frame-rate 60))
+
+(defn draw []
+  (draw-world @world)
+  (step))
+
 (defn sketch-world
   [next-world]
   (sketch
     :title "Map of the world"
     :setup setup
-    :draw #(draw (next-world))
+    :draw draw
     :size [1024 800]))
+
+
+

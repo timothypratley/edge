@@ -93,11 +93,11 @@
    :name (str "D" (rand-int 1000))
    :location (:location (rand-nth hospitals))
    :heading (rand tau)
-   :speed 0.01
+   :speed 2
    :goal (rand-loc dimensions)})
 
 (defn make [n f]
-  (into [] (map #(assoc %1 :id %2) (repeatedly n f) (range))))
+  (vec (map #(assoc %1 :id %2) (repeatedly n f) (range))))
 
 (defn rand-world
   "Generate a random world. Arguments are the desired number of each type."

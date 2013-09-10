@@ -1,78 +1,79 @@
 (ns edge.world
-  (:require [edge.drone :refer :all]))
-
-
-;denormalize
-;(let [drones (concat (world :drones) (future-drones world))] )
-
-#_(map assign-closest
-     (sort-by :deadline
-              (concat (map :remotes :missions world)
-                      (map :drone :missions world))))
-
-(defn make-plans [world]
-  ;denormalize mission list instead of traversing for it
-  (world :missions)
-  world)
-
-(defn maybe-done [world drone]
-    world)
-
-
-(defn update-missions [world]
-  (maybe-done world nil)
-  world)
-
-;; todo this is now a command, move it there
-(defn rand-mission [world remote]
-  (if (> 0.001 (rand))
-    (update-in remote [:missions] conj {:needs :medX})
-    remote))
-
-(defn create-missions [world]
-  (update-in world [:remotes] #(map (partial rand-mission world) %)))
+  (:require [edge.math :refer :all]
+            [edge.event-sourcing :refer :all]
+            [edge.commands :refer :all]
+            [edge.plan :refer :all]))
 
 
 (def medicine #{:medX :medY :medZ})
 (def sample #{:blood :urine})
-(def all-cargo (into [] (concat medicine sample)))
 
-(defn ^:private source [cargo hospital remote]
-  (if (medicine cargo)
-    hospital
-    remote))
+(let [all-cargo (vec (concat medicine sample))]
+  (defn ^:private rand-cargo []
+    (rand-nth all-cargo)))
 
-(defn ^:private choose-cargo []
-  (rand-nth all-cargo))
-
-(defn ^:private choose-remote [world]
-  (rand-nth (world :remotes)))
-
-(defn ^:private choose-hospital [world]
-  (rand-nth (world :hospitals)))
-
+; TODO: hospital selection is actually free
 (defn rand-mission [world]
-  (let [cargo (choose-cargo)
-        remote (choose-remote world)
-        hospital (choose-hospital world)
+  (let [cargo (rand-cargo)
+        remote (rand-nth (world :remotes))
         ;TODO: use clj-time
         created (java.util.Date.)
         duration 1] ;(hours (rand 64))]
     {:cargo cargo
-     :from (source cargo hospital remote)
-     :to (source cargo remote hospital)
+     :from (if (medicine cargo) :hospital remote)
+     :to (if (medicine cargo) remote :hospital)
      :created created
      :deadline created}))
 
-(defn maybe-add-missions [world]
-  (if (rand)
-    (update-in world [:missions] (fnil conj #{}) (rand-mission world))
-    world))
+(defn weighter [world a t]
+  (distance (a :location)
+            (get-location world a t)))
 
-(defn step [world]
-  (-> world
-      (update-in [:drones] #(map update-drone %))
-      update-missions
-      create-missions
-      make-plans))
+
+(def ticks-per-mission (* 3 60))
+(defn add-missions []
+  (when (zero? (rand-int ticks-per-mission))
+    (create-mission-command (rand-mission @world))
+    (assign-missions @world #(weighter @world %1 %2))))
+
+
+; excercise: thread this
+; excercise: this is O(n*log(n)),
+; find an O(n) and O(log(n)) solution
+(defn closest-hospital [world location]
+  (first (sort-by #(distance location (% :location))
+                  (world :hospitals))))
+
+(defn get-location [world place from]
+  (if (= :hospital place)
+    ((closest-hospital world from) :location)
+    (place :location)))
+
+; nested named :keys destructuring
+; excercise: write this with deep binding and no binding
+(defn go-to
+  "Returns the next location that drone should go to"
+  [world drone]
+  (let [{:keys [cargo location mission]} drone
+        {:keys [from to]} mission
+        place (if cargo to from)]
+    (get-location world place location)))
+;(go-to nil {:cargo :x, :location [1 1], :mission {:from {:location [1 1]}, :to {:location [1 1]}}})
+
+; excercise: filter drones instead
+(defn update-drones []
+  (doseq [drone (@world :drones)
+          :when (drone :mission)
+          :let [{:keys [id location speed]} drone
+                dest (go-to @world drone)
+                new-location (interpolate location dest speed)
+                heading (get-heading (v-sub dest location))]]
+    (update-drone-command id new-location heading)
+    (pickup-command drone)
+    (complete-mission-command drone)))
+
+
+(defn step []
+  (update-drones)
+  (add-missions))
 

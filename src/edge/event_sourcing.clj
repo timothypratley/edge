@@ -8,6 +8,7 @@
 
 
 ; order of arguments is important for reduce
+; TODO: wish I didn't have to define it here
 (defmulti accept
   "Signature for accepting an event, applying it to world.
   This will be implemented by your command/accept pairs.
@@ -15,6 +16,9 @@
   accept performs a data transform, updating the world,
   which is called from raise, or when hydrating an event stream."
   (fn [world event] (:event event)))
+
+
+;TODO: make configurable
 
 (def world
   "The domain, the state of everything."
@@ -37,16 +41,17 @@
 (let [current-label (atom nil)
       event-count (atom 0)
       subscriptions (atom #{})
-      events-per-snapshot 20]
+      events-per-snapshot 1000]
 
   (defn snapshot
     "Switches to a new label and writes out the current world state asynchronously."
-    [world]
+    [new-world]
     (let [sf (java.text.SimpleDateFormat. "yyyy_MM_dd__HH_mm_ss__SSS")
           now (java.util.Date.)
           label (.format sf now)]
       (reset! current-label label)
       (reset! event-count 0)
+      (reset! world new-world)
       ; write the snapsot asynchronously on another thread to avoid delays
       ; the world we are looking at is immutable
       ; TODO: we do need to know when the state file is fully written though
@@ -56,9 +61,9 @@
   (defn- store
     "Writes an event to file"
     [event]
-    (io! (with-open [w (writer (file "data" (str @current-label ".events"))
-                               :append true)]
-           (clojure.pprint/pprint event w)))
+    ;(io! (with-open [w (writer (file "data" (str @current-label ".events"))
+;                               :append true)]
+;           (clojure.pprint/pprint event w)))
     (when (>= (event :seq) events-per-snapshot)
       (snapshot @world)))
 
@@ -116,3 +121,4 @@
           (store event)
           (publish event)
           (swap! world accept event))))))
+

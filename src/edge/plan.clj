@@ -1,20 +1,29 @@
 (ns edge.plan
-  (:require [edge.world :refer :all]
+  (:require [edge.math :refer :all]
+            [edge.commands :refer :all]
             [munkres :refer :all]))
 
 
-(defn distance [a t]
-  ;TODO: make a vector sub fuction?
-  ;TODO: simplify
-  (Math/sqrt (reduce + (map #(* % %) (map - (get-in t [:from :location]) (a :location))))))
+;(defn assign [world [drone mission]]
+;  (update-in world [:drones (drone :id) :missions]
+;             (fnil conj #{}) mission))
+;(reduce assign world (solution :assignments))))
 
-(defn assign [world [drone mission]]
-  (update-in world [:drones (drone :id) :missions] (fnil conj #{}) mission))
-
-(defn plan [world]
+(defn plan [world weight]
   (let [agents (world :drones)
         tasks (seq (world :missions))
         solution (solve agents tasks
-           (weight-matrix agents tasks distance))]
-    (reduce assign world (solution :assignments))))
+           (weight-matrix agents tasks weight))]
+    (solution :assignments)))
 
+(defn assign-missions
+  [world weight]
+  (doseq [[drone mission] (plan world weight)]
+    (assign-mission-command drone mission)))
+
+
+
+#_(map assign-closest
+     (sort-by :deadline
+              (concat (map :remotes :missions world)
+                      (map :drone :missions world))))

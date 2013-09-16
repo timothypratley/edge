@@ -1,5 +1,34 @@
 (ns edge.commands
-  (:require [edge.event-sourcing :refer :all]))
+  (:require [edge.event-sourcing :refer :all]
+            [edge.math :refer :all]))
+;; TODO: don't like refering these
+(def medicine #{:medX :medY :medZ})
+(def sample #{:blood :urine})
+
+(defn choose-waypoint
+  ([waypoints from]
+   (apply min-key #(distance from %) waypoints))
+  ([waypoints from to]
+   (apply min-key #(distance from % to) waypoints)))
+
+; nested named :keys destructuring
+; excercise: write this with deep binding and no binding
+(defn go-to
+  "Returns the next location that drone should go to"
+  [world drone]
+  (let [{:keys [cargo location mission]} drone
+        rloc (get-in mission [:remote :location])
+        mcargo (mission :cargo)
+        hlocs (map :location (world :hospitals))]
+    (if cargo
+      (if (medicine mcargo)
+        rloc
+        (choose-waypoint hlocs location)) ; TODO: nearest next job
+      (if (medicine mcargo)
+        (choose-waypoint hlocs location rloc)
+        rloc))))
+
+;(go-to nil {:cargo :x, :location [1 1], :mission {:from {:location [1 1]}, :to {:location [1 1]}}})
 
 
 (defn update-drone-command
@@ -20,8 +49,9 @@
 
 (defn can-complete-mission
   [drone]
-  (= (drone :location)
-     (get-in drone [:mission :to :location])))
+  (and (drone :cargo)
+       (= (drone :location)
+          (go-to @world drone))))
 
 (defn complete-mission-command
   [drone]
@@ -33,14 +63,19 @@
   [world e]
   (-> world
       (update-in [:missions] disj (get-in world [:drone (e :drone-id) :mission]))
-      (update-in [:drones (e :drone-id)] dissoc :mission)))
+      (update-in [:drones (e :drone-id)] dissoc :mission :cargo)))
 
 
 
+; TODO: using @world is cheezy
 (defn can-pickup
   [drone]
-  (= (drone :location)
-     (get-in drone [:mission :from :location])))
+  (and (not (drone :cargo))
+       (if (medicine (get-in drone [:mission :cargo]))
+         (some #(= (drone :location) %)
+               (map :location (@world :hospitals)))
+         (= (drone :location)
+            (get-in drone [:mission :remote :location])))))
 
 (defn pickup-command
   [drone]
@@ -48,6 +83,7 @@
     (raise! :pickup
             {:drone-id (drone :id)})))
 
+;TODO: flag the cargo as taken in the mission??
 (defmethod accept :pickup
   [world e]
   (assoc-in world [:drones (e :drone-id) :cargo]
@@ -77,6 +113,11 @@
   [world e]
   (update-in world [:missions]
              (fnil conj #{}) (e :mission)))
+
+
+
+
+
 
 
 

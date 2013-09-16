@@ -11,7 +11,8 @@
 
 
 (defn start []
-  (sketch-world step))
+  (sketch-world))
 
 #_(defn stop []
   (sketch-stop))
+

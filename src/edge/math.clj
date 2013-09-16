@@ -41,8 +41,10 @@
 (defn distance
   "The cartesian distance between two points is the root of the sum of squares
   of the difference in each dimension"
-  [a b]
-  (v-length (v-sub a b)))
+  ([a b]
+   (v-length (v-sub a b)))
+  ([a b & more]
+   (+ (distance a b) (apply distance b more))))
 
 ;; bad:  x and y must be extracted
 ;TODO: show in simpler function
@@ -95,4 +97,6 @@
 (defn get-heading
   [[x y]]
   (+ (Math/atan2 y x) (/ Math/PI 2)))
+
+
 

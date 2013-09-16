@@ -93,8 +93,7 @@
    :name (str "D" (rand-int 1000))
    :location (:location (rand-nth hospitals))
    :heading (rand tau)
-   :speed 2
-   :goal (rand-loc dimensions)})
+   :speed 2})
 
 (defn make [n f]
   (vec (map #(assoc %1 :id %2) (repeatedly n f) (range))))

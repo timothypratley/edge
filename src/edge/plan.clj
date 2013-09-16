@@ -12,13 +12,15 @@
 (defn plan [world weight]
   (let [agents (world :drones)
         tasks (seq (world :missions))
-        solution (solve agents tasks
-           (weight-matrix agents tasks weight))]
+        weights (weight-matrix agents tasks weight)
+        _ (println weights)
+        solution (solve agents tasks weights)]
     (solution :assignments)))
 
 (defn assign-missions
   [world weight]
-  (doseq [[drone mission] (plan world weight)]
+  (doseq [[drone mission] (plan world weight)
+          :when mission]
     (assign-mission-command drone mission)))
 
 

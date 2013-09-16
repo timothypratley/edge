@@ -61,9 +61,9 @@
   (defn- store
     "Writes an event to file"
     [event]
-    ;(io! (with-open [w (writer (file "data" (str @current-label ".events"))
-;                               :append true)]
-;           (clojure.pprint/pprint event w)))
+    (io! (with-open [w (writer (file "data" (str @current-label ".events"))
+                               :append true)]
+           (clojure.pprint/pprint event w)))
     (when (>= (event :seq) events-per-snapshot)
       (snapshot @world)))
 
@@ -121,4 +121,5 @@
           (store event)
           (publish event)
           (swap! world accept event))))))
+
 

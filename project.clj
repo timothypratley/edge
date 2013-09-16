@@ -7,6 +7,8 @@
                  [quil "1.6.0"]
                  [munkres "0.1.0"]]
   :profiles {:dev {:dependencies [[midje "1.5.1"]]}}
-  :plugins [[lein-midje "3.0.0"]])
+  :plugins [[lein-midje "3.0.0"]
+            [lein-ancient "0.4.4"]])
+
 
 

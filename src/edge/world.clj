@@ -46,8 +46,8 @@
           :let [{:keys [id location speed]} drone
                 dest (go-to @world drone)
                 new-location (interpolate location dest speed)
-                heading (get-heading (v-sub new-location location))]]
-    (update-drone-command id new-location heading)
+                new-heading (heading (v-sub new-location location))]]
+    (update-drone-command id new-location new-heading)
     (pickup-command drone)
     (complete-mission-command drone)))
 
@@ -55,4 +55,5 @@
 (defn step []
   (update-drones)
   (add-missions))
+
 

@@ -1,6 +1,11 @@
 (ns edge.math)
 
 
+(defn square
+  "Squares a number"
+  [x]
+  (* x x))
+
 (defn v-sub
   "Subtraction is the difference in each dimension of the supplied vectors"
   [& vs]
@@ -10,11 +15,6 @@
   "Addition is the sum in each dimension of the supplied vectors"
   [& vs]
   (apply map + vs))
-
-(defn square
-  "Squares a number"
-  [x]
-  (* x x))
 
 (defn v-square
   "Squares each dimension of vector"
@@ -27,13 +27,21 @@
   [v]
   (map * v v))
 
-; excercise: write this as nested and let chained
+; excercise: write this as piped and let chained
 (defn v-length
   "The length of a vector is the root of the sum of squares of dimensions"
   [v]
   (Math/sqrt (reduce + (v-square v))))
 
+(defn v-length
+  [v]
+  (->> v
+       v-square
+       (reduce +)
+       Math/sqrt))
+
 (defn scale
+  "Multiply each dimension in a vector by a constant"
   [v c]
   (for [dim v]
     (* dim c)))
@@ -94,9 +102,12 @@
 
 ;(interpolate [3 4] [30 40] 1)
 
-(defn get-heading
+(defn heading
   [[x y]]
   (+ (Math/atan2 y x) (/ Math/PI 2)))
+
+
+
 
 
 

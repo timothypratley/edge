@@ -12,6 +12,7 @@
          (fact (complete-mission-command drone) => truthy)))
 
 (facts "about accept"
-       (fact (accept {} {:event :assign-mission}) => truthy)
+       (fact (accept {} {:event :mission-assigned}) => truthy)
        (fact (accept {} {:event :pickup :drone-id 1}) => truthy))
+
 

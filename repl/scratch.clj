@@ -3,10 +3,18 @@
             [edge.world :refer :all]
             [edge.commands :refer :all]
             [edge.event-sourcing :refer :all]
+            [munkres :refer :all]
             [clojure.repl :refer :all]
+            [criterium.core :refer :all]
             ;[midje.sweet :refer :all]
             ;[midje.repl]
             ))
+
+#_(bench
+ (let [agents (range 20)
+      tasks (range 20)
+      weights (vec (repeatedly 20 #(vec (range 20))))]
+  (solve agents tasks weights)))
 
 (start)
 
@@ -50,4 +58,5 @@ d
    :name "Harbor Island Remote",
    :location [955 41]}}}
 )
+
 

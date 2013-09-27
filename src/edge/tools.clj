@@ -5,14 +5,11 @@
 
 (defn dict-inc [m k]
   (update-in m [k] (fnil inc 0)))
-;(dict-inc {:foo 1} :foo)
 
 (defn freq [words]
   (reduce dict-inc {} words))
-;(freq (re-seq #"\w+" "the quick brown fox jumped the quick brown chicken quick"))
 
 (def comb (partial merge-with +))
-;(comb {:foo 2} {:foo 1})
 
 (defn word-freq
   [f]
@@ -20,13 +17,13 @@
     (reduce comb {} (map word-freq (rest (file-seq f))))
     (when (.endsWith (.getName f) ".clj")
       (freq (re-seq #"\w+" (slurp (.getPath f)))))))
-;(word-freq (file "/git/lib-noir/src/noir/util/crypt.clj"))
 
 (defn freq-path
   "Reports how often each word occurs in all clj files in path"
   [path]
   (sort-by last >
            (word-freq (file path))))
+
 ; I ran this on a well known library to get some statistics on what Clojure
 ; features are used in the wild, to make sure we focus on the important ones
 
@@ -66,5 +63,7 @@
 ;doto
 ;sort
 ;switchp
+
+
 
 

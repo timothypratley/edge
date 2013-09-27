@@ -109,6 +109,4 @@
      :remotes rs
      :drones ds}))
 
-(rand-world [1024 800] 4 25 15)
-
 

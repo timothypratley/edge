@@ -1,5 +1,6 @@
 (ns edge.examples-test)
 
+
 (re-seq #"\w+" "the quick brown fox")
 
 (zipmap [:a :b :c] [1 2 3])
@@ -14,5 +15,6 @@
 
 (spit "test.txt" "some text that we wrote to a file")
 (slurp "test.txt")
+
 
 

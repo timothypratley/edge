@@ -1,6 +1,6 @@
 (ns edge.website.app.communication
-  (:require [edge.website.app.state :as state]
-            [edge.website.app.logging :as log]
+  (:require [edge.website.app.logging :as log]
+            [reagent.session :as session]
             [timothypratley.patchin :as patchin]
             [taoensso.sente :as sente]))
 
@@ -46,7 +46,7 @@
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (log/debug "Push event from server:" ?data)
-  (swap! state/app-state update-in [:model] patchin/patch (second ?data)))
+  (session/update-in! [:model] patchin/patch (second ?data)))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -54,8 +54,11 @@
     (log/debug "Handshake:" ?data)))
 
 (def router (atom nil))
+
 (defn stop-router! []
-  (when-let [stop-f @router] (stop-f)))
+  (when-let [stop-f @router]
+    (stop-f)))
+
 (defn start-router! []
   (stop-router!)
   (reset! router (sente/start-chsk-router! ch-chsk event-msg-handler*)))
@@ -66,6 +69,14 @@
                          (login "tim"))
              1000)
 (.setTimeout js/window (fn []
-                         (log/debug "Send the super")
-                         (chsk-send! [:edge/super {:great "stuff"}]))
+                         (chsk-send! [:edge/viewpoint (patchin/diff {} (session/get :viewpoint))]))
              3000)
+
+;; TODO: what about rate limiting?
+(defn maybe-send-viewpoint [k r a b]
+  (let [va (:viewpoint a)
+        vb (:viewpoint b)]
+    (when (not= va vb)
+      (chsk-send! [:edge/viewpoint (patchin/diff va vb)]))))
+
+(add-watch session/state :k maybe-send-viewpoint)

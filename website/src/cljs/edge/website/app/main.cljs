@@ -14,19 +14,23 @@
 ;; -------------------------
 ;; Routes
 
+(def page {:home #'home/home-page
+           :about #'about/about-page
+           :map #'map/map-page})
+
 (defn current-page []
-  [:div [(session/get :current-page)]])
+  [:div [(page (session/get-in [:viewpoint :current-page]))]])
 
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (session/put! :current-page #'home/home-page))
+  (session/assoc-in! [:viewpoint :current-page] :home))
 
 (secretary/defroute "/about" []
-  (session/put! :current-page #'about/about-page))
+  (session/assoc-in! [:viewpoint :current-page] :about))
 
 (secretary/defroute "/map" []
-  (session/put! :current-page #'map/map-page))
+  (session/assoc-in! [:viewpoint :current-page] :map))
 
 ;; -------------------------
 ;; History

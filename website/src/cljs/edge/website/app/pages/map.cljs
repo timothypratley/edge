@@ -1,5 +1,5 @@
 (ns edge.website.app.pages.map
-  (:require [edge.website.app.state :as state]))
+  (:require [reagent.session :as session]))
 
 (def radians-to-degrees (/ 180.0 Math/PI))
 
@@ -71,4 +71,4 @@
    [:div
     [:a {:href "#/"}
      "go to home page"]]
-   [draw-world (:model @state/app-state)]])
+   [draw-world (session/get :model)]])

@@ -7,13 +7,14 @@
   :source-paths ["src/clj" "src/cljs"]
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-3169" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-3196" :scope "provided"]
                  [org.clojure/tools.logging "0.3.1"]
+                 [timothypratley/patchin "0.3.5"]
                  [com.taoensso/sente "1.4.1"]
-                 [ring-server "0.4.0"]
+                 [http-kit "2.1.19"]
                  [cljsjs/react "0.13.1-0"]
                  [reagent "0.5.0"]
-                 [reagent-forms "0.4.9"]
+                 [reagent-forms "0.5.0"]
                  [reagent-utils "0.1.4"]
                  [ring "1.3.2"]
                  [ring/ring-defaults "0.1.4"]
@@ -23,9 +24,8 @@
                  [environ "1.0.0"]
                  [secretary "1.2.3"]]
 
-  :plugins [[lein-cljsbuild "1.0.4"]
+  :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
-            [lein-ring "0.9.1"]
             [lein-asset-minifier "0.2.2"]]
 
   :ring {:handler edge.website.routes/handler

@@ -1,5 +1,6 @@
 (ns edge.website.communication
   (:require [clojure.tools.logging :as log]
+            [timothypratley.patchin :as patchin]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit :refer [sente-web-server-adapter]]))
 
@@ -56,4 +57,4 @@
   (let [session (:session ring-req)
         uid (:uid session)]
     (log/info "SUPER" uid)
-    (chsk-send! uid [:edge/super-reply test-world])))
+    (chsk-send! uid [:edge/super-reply (patchin/diff {} test-world)])))

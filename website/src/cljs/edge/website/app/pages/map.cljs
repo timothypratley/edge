@@ -71,4 +71,4 @@
    [:div
     [:a {:href "#/"}
      "go to home page"]]
-   [draw-world (:world @state/app-state)]])
+   [draw-world (:model @state/app-state)]])

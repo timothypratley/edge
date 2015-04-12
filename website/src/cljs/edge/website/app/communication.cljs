@@ -65,11 +65,13 @@
 
 (start-router!)
 
-(.setTimeout js/window (fn []
-                         (login "tim"))
+(.setTimeout js/window
+             (fn []
+               (login "tim"))
              1000)
-(.setTimeout js/window (fn []
-                         (chsk-send! [:edge/viewpoint (patchin/diff {} (session/get :viewpoint))]))
+(.setTimeout js/window
+             (fn []
+               (chsk-send! [:edge/viewpoint (patchin/diff {} (session/get :viewpoint))]))
              3000)
 
 ;; TODO: what about rate limiting?

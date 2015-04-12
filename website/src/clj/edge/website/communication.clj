@@ -18,22 +18,28 @@
                           :hospital-id 1
                           :cargo :blood}}})
 
-(defn update-models []
-  )
-
 (defn with-patch [app-states uid p]
   (-> app-states
       (update-in [uid :viewpoint] patchin/patch p)
       (assoc-in [uid :model] test-world)))
 
-(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
-              connected-uids]}
-      (sente/make-channel-socket! sente-web-server-adapter {})]
+(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn connected-uids]}
+      (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn :client-id})]
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
+
+(defn update-models []
+  (doseq [uid (:any @connected-uids)
+          :let [a (get-in @app-states [uid :model])
+                b test-world]
+          :when (not= a b)
+          :let [p (patchin/diff a b)]]
+    (swap! app-states update-in [uid] assoc :model b)
+    ;; TODO: decouple with watcher?
+    (chsk-send! uid [:edge/patch p])))
 
 (defmulti event-msg-handler :id)
 
@@ -63,9 +69,14 @@
 
 (defmethod event-msg-handler :chsk/uidport-open
   [{:keys [ring-req ?data]}]
-  (let [session (:session ring-req)
-        uid (:uid session)]
-    (chsk-send! uid [:edge/initial (patchin/diff {} test-world)])))
+  (let [uid (get-in ring-req [:session :uid])]
+    (log/info "New connection:" uid)
+    (update-models)))
+
+(defmethod event-msg-handler :chsk/uidport-close
+  [{:keys [ring-req ?data]}]
+  (when-let [uid (get-in ring-req [:session :uid])]
+    (swap! app-states dissoc uid)))
 
 (defmethod event-msg-handler :edge/viewpoint
   [{:keys [ring-req ?data]}]
